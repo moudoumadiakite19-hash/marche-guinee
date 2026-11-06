@@ -1,0 +1,170 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#087443">
+<title>Marché Guinée</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f5f7f6;color:#17231d}
+header{background:#087443;color:white;padding:18px 15px}
+.top{display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:23px;font-weight:bold}
+.logo span{color:#ffd447}
+.cart{background:white;color:#087443;border:0;border-radius:9px;padding:11px;font-weight:bold}
+.hero{background:linear-gradient(130deg,#075c38,#13a466);color:white;padding:35px 20px}
+.hero h1{font-size:29px;margin-bottom:12px}
+.hero p{line-height:1.6}
+.search{padding:15px;background:white}
+.search input{width:100%;padding:15px;border:1px solid #ddd;border-radius:10px;font-size:16px}
+main{padding:18px 14px}
+h2{font-size:21px;margin:12px 0 16px}
+.categories{display:flex;gap:9px;overflow-x:auto;padding-bottom:12px}
+.cat{border:1px solid #ddd;background:white;padding:11px 15px;border-radius:25px;white-space:nowrap}
+.cat.active{background:#087443;color:white;border-color:#087443}
+.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.product{background:white;border-radius:13px;overflow:hidden;box-shadow:0 2px 9px #0000000d}
+.product img{width:100%;height:135px;object-fit:cover;background:#eee}
+.info{padding:11px}
+.info h3{font-size:15px;margin-bottom:8px}
+.price{color:#087443;font-weight:bold;font-size:16px;margin-bottom:10px}
+.add{background:#087443;color:white;border:0;width:100%;padding:11px;border-radius:8px;font-weight:bold}
+.empty{grid-column:1/-1;text-align:center;padding:30px}
+footer{background:#075c38;color:white;text-align:center;padding:25px 15px;margin-top:30px;line-height:1.8}
+.cartbox{display:none;position:fixed;inset:0;background:#0009;z-index:5;align-items:center;justify-content:center;padding:15px}
+.cartcontent{background:white;width:100%;max-width:420px;border-radius:15px;padding:20px;max-height:80vh;overflow:auto}
+.cartcontent h2{margin-bottom:15px}
+.cartrow{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #ddd}
+.close{float:right;border:0;background:#eee;padding:8px;border-radius:7px}
+.total{font-weight:bold;font-size:19px;margin:18px 0}
+@media(min-width:650px){.products{grid-template-columns:repeat(4,1fr)}main,.search,.hero{padding-left:max(20px,8%);padding-right:max(20px,8%)}}
+</style>
+</head>
+<body>
+
+<header>
+<div class="top">
+<div class="logo">MARCHÉ <span>GUINÉE</span></div>
+<button class="cart" onclick="openCart()">🛒 Panier (<span id="count">0</span>)</button>
+</div>
+</header>
+
+<section class="hero">
+<h1>Bienvenue sur Marché Guinée 🇬🇳</h1>
+<p>Achetez et vendez facilement partout en Guinée.<br>
+Découvrez des produits et de bonnes affaires au même endroit !</p>
+</section>
+
+<div class="search">
+<input id="search" type="search" placeholder="🔍 Rechercher un produit..." oninput="render()">
+</div>
+
+<main>
+<h2>Nos catégories</h2>
+<div class="categories">
+<button class="cat active" onclick="category('Tous',this)">Tout</button>
+<button class="cat" onclick="category('Téléphones',this)">📱 Téléphones</button>
+<button class="cat" onclick="category('Mode',this)">👕 Mode</button>
+<button class="cat" onclick="category('Maison',this)">🏠 Maison</button>
+<button class="cat" onclick="category('Alimentation',this)">🍚 Alimentation</button>
+<button class="cat" onclick="category('Autres',this)">📦 Autres</button>
+</div>
+
+<h2>Produits disponibles</h2>
+<div class="products" id="products"></div>
+</main>
+
+<footer>
+<h2>Marché Guinée 🇬🇳</h2>
+Achetez. Vendez. Développez votre commerce.<br>
+Une plateforme pour les Guinéens.<br><br>
+© 2026 Marché Guinée. Tous droits réservés.
+</footer>
+
+<div class="cartbox" id="cartbox">
+<div class="cartcontent">
+<button class="close" onclick="closeCart()">✕ Fermer</button>
+<h2>Mon panier 🛒</h2>
+<div id="cartitems"></div>
+<div class="total" id="total">Total : 0 GNF</div>
+<button class="add" onclick="checkout()">Continuer la commande</button>
+</div>
+</div>
+
+<script>
+const products=[
+{name:"Smartphone Android",cat:"Téléphones",price:1500000,img:"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500"},
+{name:"Téléphone moderne",cat:"Téléphones",price:2200000,img:"https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=500"},
+{name:"Chaussures tendance",cat:"Mode",price:250000,img:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500"},
+{name:"Sac élégant",cat:"Mode",price:180000,img:"https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500"},
+{name:"Canapé moderne",cat:"Maison",price:3500000,img:"https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500"},
+{name:"Décoration maison",cat:"Maison",price:300000,img:"https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=500"},
+{name:"Riz de qualité",cat:"Alimentation",price:300000,img:"https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500"},
+{name:"Montre élégante",cat:"Autres",price:200000,img:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"}
+];
+
+let selected="Tous";
+let cart=[];
+
+function money(n){return n.toLocaleString("fr-FR")+" GNF"}
+
+function render(){
+let q=document.getElementById("search").value.toLowerCase();
+let list=products.filter(p=>(selected==="Tous"||p.cat===selected)&&p.name.toLowerCase().includes(q));
+document.getElementById("products").innerHTML=list.length?list.map((p)=>{
+let i=products.indexOf(p);
+return `<div class="product">
+<img src="${p.img}" alt="${p.name}" loading="lazy">
+<div class="info">
+<h3>${p.name}</h3>
+<div class="price">${money(p.price)}</div>
+<button class="add" onclick="add(${i})">Ajouter au panier</button>
+</div></div>`;
+}).join(""):'<div class="empty">Aucun produit trouvé.</div>';
+}
+
+function category(cat,btn){
+selected=cat;
+document.querySelectorAll(".cat").forEach(b=>b.classList.remove("active"));
+btn.classList.add("active");
+render();
+}
+
+function add(i){
+cart.push(products[i]);
+document.getElementById("count").textContent=cart.length;
+alert("Produit ajouté au panier !");
+}
+
+function openCart(){
+document.getElementById("cartbox").style.display="flex";
+showCart();
+}
+function closeCart(){
+document.getElementById("cartbox").style.display="none";
+}
+function showCart(){
+let area=document.getElementById("cartitems");
+area.innerHTML=cart.length?cart.map((p,i)=>`
+<div class="cartrow">
+<span>${p.name}<br>${money(p.price)}</span>
+<button onclick="removeItem(${i})">❌</button>
+</div>`).join(""):"Votre panier est vide.";
+let total=cart.reduce((s,p)=>s+p.price,0);
+document.getElementById("total").textContent="Total : "+money(total);
+}
+function removeItem(i){
+cart.splice(i,1);
+document.getElementById("count").textContent=cart.length;
+showCart();
+}
+function checkout(){
+if(!cart.length){alert("Votre panier est vide.");return}
+alert("Votre panier est prêt ! La prochaine étape sera de connecter les vendeurs et le système de commande.");
+}
+render();
+</script>
+</body>
+</html>
